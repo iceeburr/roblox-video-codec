@@ -6,6 +6,7 @@
 
 	Fast JPEG decoder
 	Made by iceeburr with 💖 and 🧊
+	STILL IN DEVELOPMENT!
 
 ]]
 
