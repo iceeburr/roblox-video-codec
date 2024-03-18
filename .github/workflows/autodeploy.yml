@@ -40,7 +40,7 @@ jobs:
         run: rojo sourcemap test.project.json -o sourcemap.json
 
       - name: Quality Checks
-        run: luau-lsp analyze src --sourcemap="sourcemap.json" --definitions=globalTypes.d.lua
+        run: luau-lsp analyze --sourcemap sourcemap.json --definitions globalTypes.d.lua src
 
       - name: Build
         run: |
