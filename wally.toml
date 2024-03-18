@@ -1,7 +1,7 @@
 [package]
 name = "iceeburr/roblox-video-codec"
 description = "STILL IN DEVELOPMENT! Efficient encoding/decoding, and display of video files within Roblox. Seamless integration for any game."
-version = "0.0.1"
+version = "0.0.2"
 authors = ["iceeburr <personal@iceeburr.ru>"]
 license = "MIT"
 registry = "https://github.com/UpliftGames/wally-index"
