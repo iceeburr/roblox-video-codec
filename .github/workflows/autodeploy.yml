@@ -49,7 +49,7 @@ jobs:
 
       - name: Deploy
         run: |
-          rbxcloud experience publish -f roblox-video-codec.rbxl -p ${{ vars.PLACE_ID }} -u ${{ vars.GAME_ID }} -t published -a dfdf#${{ secrets.DEPLOY_API_KEY }}
+          rbxcloud experience publish -f roblox-video-codec.rbxl -p ${{ vars.PLACE_ID }} -u ${{ vars.GAME_ID }} -t published -a dfdf #${{ secrets.DEPLOY_API_KEY }}
           #rbxcloud assets update --asset-id ${{ vars.ASSET_ID }} --filepath roblox-video-codec.rbxm --api-key ${{ secrets.DEPLOY_API_KEY }} --asset-type model-fbx
           wally login --token "${{secrets.WALLY_TOKEN}}"
           wally publish > wally_validate.txt
