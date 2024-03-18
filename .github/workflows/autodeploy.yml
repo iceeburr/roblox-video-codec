@@ -11,46 +11,46 @@ jobs:
 
     steps:
       - name: Checkout Code
-      uses: actions/checkout@v4
+        uses: actions/checkout@v4
 
       - name: Install Aftman
-      uses: ok-nick/setup-aftman@v0.4.2
+        uses: ok-nick/setup-aftman@v0.4.2
 
       - name: Install Aftman Packages
-      run: aftman install
+        run: aftman install
 
       - name: Install Wally Packages
-      run: wally install
-      
+        run: wally install
+
       - name: Generate Sourcemap
-      run: rojo sourcemap test.project.json -o sourcemap.json
+        run: rojo sourcemap test.project.json -o sourcemap.json
 
       - name: Export Wally Package Types
-      run: |
-        mkdir -p Packages
-        wally-package-types --sourcemap sourcemap.json Packages
-      
+        run: |
+          mkdir -p Packages
+          wally-package-types --sourcemap sourcemap.json Packages
+
       - name: Curl Luau Types
-      shell: bash
-      run: curl -L "https://raw.githubusercontent.com/JohnnyMorganz/luau-lsp/main/scripts/globalTypes.d.lua" > "globalTypes.d.lua"
-      
+        shell: bash
+        run: curl -L "https://raw.githubusercontent.com/JohnnyMorganz/luau-lsp/main/scripts/globalTypes.d.lua" > "globalTypes.d.lua"
+
       - name: Style Code
-      run: stylua src
+        run: stylua src
 
       - name: Generate Sourcemap
-      run: rojo sourcemap test.project.json -o sourcemap.json
+        run: rojo sourcemap test.project.json -o sourcemap.json
 
       - name: Quality Checks
-      run: luau-lsp analyze src --sourcemap="sourcemap.json" --definitions=globalTypes.d.lua
-      
+        run: luau-lsp analyze src --sourcemap="sourcemap.json" --definitions=globalTypes.d.lua
+
       - name: Build
-      run: |
-        rojo build default.project.json -o roblox-video-codec.rbxm
-        rojo build test.project.json -o roblox-video-codec.rbxl
-      
+        run: |
+          rojo build default.project.json -o roblox-video-codec.rbxm
+          rojo build test.project.json -o roblox-video-codec.rbxl
+
       - name: Deploy
-      run: |
-        rbxcloud experience publish -f roblox-video-codec.rbxl -p ${{ vars.PLACE_ID }} -u ${{ vars.GAME_ID }} -t published -a ${{ secrets.DEPLOY_API_KEY }}
-        rbxcloud assets update --asset-id ${{ vars.ASSET_ID }} --filepath roblox-video-codec.rbxm --api-key ${{ secrets.DEPLOY_API_KEY }}
-        wally login --token "${{secrets.WALLY_TOKEN}}"
-        wally publish --project-path default.project.json
+        run: |
+          rbxcloud experience publish -f roblox-video-codec.rbxl -p ${{ vars.PLACE_ID }} -u ${{ vars.GAME_ID }} -t published -a ${{ secrets.DEPLOY_API_KEY }}
+          rbxcloud assets update --asset-id ${{ vars.ASSET_ID }} --filepath roblox-video-codec.rbxm --api-key ${{ secrets.DEPLOY_API_KEY }}
+          wally login --token "${{secrets.WALLY_TOKEN}}"
+          wally publish --project-path default.project.json
