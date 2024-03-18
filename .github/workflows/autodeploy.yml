@@ -48,14 +48,4 @@ jobs:
           rojo build test.project.json -o roblox-video-codec.rbxl
 
       - name: Deploy
-        run: |
-          rbxcloud experience publish -f roblox-video-codec.rbxl -p ${{ vars.PLACE_ID }} -u ${{ vars.GAME_ID }} -t published -a dfdf #${{ secrets.DEPLOY_API_KEY }}
-          #rbxcloud assets update --asset-id ${{ vars.ASSET_ID }} --filepath roblox-video-codec.rbxm --api-key ${{ secrets.DEPLOY_API_KEY }} --asset-type model-fbx
-          wally login --token "${{secrets.WALLY_TOKEN}}"
-          wally publish > wally_validate.txt
-          $errorMessage = Select-String -Path wally_validate.txt -Pattern "error"
-          if ($errorMessage) {
-            $errorMessage = Get-Content -Path wally_validate.txt
-            Write-Host "::error::$errorMessage"
-            exit 1
-          }
+        run: scripts/deploy.ps1
