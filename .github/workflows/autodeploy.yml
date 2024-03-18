@@ -48,7 +48,6 @@ jobs:
           rojo build test.project.json -o roblox-video-codec.rbxl
 
       - name: Deploy
-        shell: bash
         run: |
           rbxcloud experience publish -f roblox-video-codec.rbxl -p ${{ vars.PLACE_ID }} -u ${{ vars.GAME_ID }} -t published -a ${{ secrets.DEPLOY_API_KEY }}
           #rbxcloud assets update --asset-id ${{ vars.ASSET_ID }} --filepath roblox-video-codec.rbxm --api-key ${{ secrets.DEPLOY_API_KEY }} --asset-type model-fbx
@@ -56,6 +55,6 @@ jobs:
           wally publish > wally_validate.txt
           $errorMessage = Select-String -Path wally_validatetxt -Pattern "error"
           if ($errorMessage) {
-            Write-Host "$errorMessage"
+            Write-Host "::error::$errorMessage"
             exit 1
           }
