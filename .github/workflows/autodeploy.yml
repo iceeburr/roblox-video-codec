@@ -12,8 +12,12 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+
+      - name: Debug
         shell: bash
-        run: ls
+        run: |
+          ls
+          cat aftman.toml
 
       - name: Install Aftman
         uses: ok-nick/setup-aftman@v0.4.2
