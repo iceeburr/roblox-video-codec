@@ -1,0 +1,15 @@
+{
+  "name": "roblox-video-codec",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "Packages": {
+        "$className": "Folder",
+        "$path": "Packages",
+        "roblox-video-codec": {
+          "$path": "src"
+        }
+      }
+    }
+  }
+}

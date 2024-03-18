@@ -1,0 +1,18 @@
+# Project Place File
+/*.rbxm
+/*.rbxl
+/*.rbxmx
+/*.rbxlx
+
+# Roblox Studio Lock Files
+/*.rbxlx.lock
+/*.rbxl.lock
+
+# Visual Studio Code
+/.vscode/settings.json
+
+# Code Analysis
+/sourcemap.json
+
+# Wally
+/Packages/

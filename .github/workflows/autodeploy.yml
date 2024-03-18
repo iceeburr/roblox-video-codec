@@ -1,0 +1,54 @@
+name: Auto Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    - name: Checkout Code
+    uses: actions/checkout@latest
+
+    - name: Install Aftman
+    uses: ok-nick/setup-aftman@latest
+
+    - name: Install Aftman Packages
+    run: aftman install
+
+    - name: Install Wally Packages
+    run: wally install
+    
+    - name: Generate Sourcemap
+    run: rojo sourcemap test.project.json -o sourcemap.json
+
+    - name: Export Wally Package Types
+    run: |
+      mkdir -p Packages
+      wally-package-types --sourcemap sourcemap.json Packages
+    
+    - name: Curl Luau Types
+    shell: bash
+    run: curl -L "https://raw.githubusercontent.com/JohnnyMorganz/luau-lsp/main/scripts/globalTypes.d.lua" > "globalTypes.d.lua"
+    
+    - name: Style Code
+    run: stylua src
+
+    - name: Generate Sourcemap
+    run: rojo sourcemap test.project.json -o sourcemap.json
+
+    - name: Quality Checks
+    run: luau-lsp analyze src --sourcemap="sourcemap.json" --definitions=globalTypes.d.lua
+    
+    - name: Build
+    run: |
+      rojo build default.project.json -o roblox-video-codec.rbxm
+      rojo build test.project.json -o roblox-video-codec.rbxl
+    
+    - name: Deploy
+    run: |
+      rbxcloud experience publish -f roblox-video-codec.rbxl -p ? -u ? -t published -a ${{ secrets.DEPLOY_API_KEY }}
+      #rbxcloud assets update --asset-id ? --filepath roblox-video-codec.rbxm --api-key ${{ secrets.DEPLOY_API_KEY }}
+      wally login --token "${{secrets.WALLY_TOKEN}}"
+      #wally publish --project-path default.project.json
