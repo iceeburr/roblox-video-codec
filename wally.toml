@@ -6,5 +6,6 @@ authors = ["iceeburr <personal@iceeburr.ru>"]
 license = "MIT"
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
+exclude = ["sourcemap.json", "globalTypes.d.lua", "Packages"]
 
 [dependencies]
