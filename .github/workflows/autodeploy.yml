@@ -55,6 +55,7 @@ jobs:
           wally publish > wally_validate.txt
           $errorMessage = Select-String -Path wally_validate.txt -Pattern "error"
           if ($errorMessage) {
+            $errorMessage = Get-Content -Path wally_validate.txt
             Write-Host "::error::$errorMessage"
             exit 1
           }
