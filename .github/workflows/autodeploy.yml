@@ -19,6 +19,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Wally Packages
+        shell: bash
         run: wally install
 
       - name: Generate Sourcemap
@@ -26,7 +27,7 @@ jobs:
 
       - name: Export Wally Package Types
         run: |
-          mkdir -p Packages
+          mkdir Packages
           wally-package-types --sourcemap sourcemap.json Packages
 
       - name: Curl Luau Types
