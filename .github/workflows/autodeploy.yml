@@ -53,7 +53,7 @@ jobs:
           #rbxcloud assets update --asset-id ${{ vars.ASSET_ID }} --filepath roblox-video-codec.rbxm --api-key ${{ secrets.DEPLOY_API_KEY }} --asset-type model-fbx
           wally login --token "${{secrets.WALLY_TOKEN}}"
           wally publish > wally_validate.txt
-          $errorMessage = Select-String -Path wally_validatetxt -Pattern "error"
+          $errorMessage = Select-String -Path wally_validate.txt -Pattern "error"
           if ($errorMessage) {
             Write-Host "::error::$errorMessage"
             exit 1
