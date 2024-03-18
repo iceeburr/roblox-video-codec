@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        shell: bash
+        run: ls
 
       - name: Install Aftman
         uses: ok-nick/setup-aftman@v0.4.2
