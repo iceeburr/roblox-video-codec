@@ -8,6 +8,12 @@ on:
 jobs:
   autodeploy:
     runs-on: windows-latest
+    env:
+      ASSET_ID: ${{ vars.ASSET_ID }}
+      PLACE_ID: ${{ vars.PLACE_ID }}
+      GAME_ID: ${{ vars.GAME_ID }}
+      DEPLOY_API_KEY: ${{ secrets.DEPLOY_API_KEY }}
+      WALLY_TOKEN: ${{ secrets.WALLY_TOKEN }}
 
     steps:
       - name: Checkout Code
