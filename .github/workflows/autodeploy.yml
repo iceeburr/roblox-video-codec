@@ -7,7 +7,7 @@ on:
 
 jobs:
   autodeploy:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - name: Checkout Code
@@ -19,7 +19,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Wally Packages
-        shell: bash
         run: wally install
 
       - name: Generate Sourcemap
