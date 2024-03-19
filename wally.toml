@@ -6,6 +6,12 @@ authors = ["iceeburr"]
 license = "MIT"
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
-exclude = ["sourcemap.json", "globalTypes.d.lua", "Packages"]
+exclude = [
+    "sourcemap.json",
+    "globalTypes.d.lua",
+    "Packages",
+    "app",
+    "assets/videos",
+]
 
 [dependencies]
