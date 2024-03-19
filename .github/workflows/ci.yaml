@@ -30,7 +30,7 @@ jobs:
         run: curl -L "https://raw.githubusercontent.com/JohnnyMorganz/luau-lsp/main/scripts/globalTypes.d.lua" > "globalTypes.d.lua"
 
       - name: Style Code
-        run: stylua src -c
+        run: stylua src
 
       - name: Generate Sourcemap
         run: rojo sourcemap test.project.json -o sourcemap.json
