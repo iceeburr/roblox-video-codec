@@ -15,7 +15,7 @@ local jpeg = {}
 
 --// Base Functions & Constants \\--
 
-local markerTypes = {
+local _markerTypes = {
 	--// Frame Types & Extra (SOFn) \\--
 	[0xC0] = "unsupported", -- SOF0 Baseline DCT
 	[0xC1] = "unsupported", -- SOF1 Extended Sequential DCT
