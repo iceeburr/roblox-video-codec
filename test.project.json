@@ -2,6 +2,11 @@
   "name": "roblox-video-codec",
   "tree": {
     "$className": "DataModel",
+    "Workspace": {
+      "Map": {
+        "$path": "assets/models/map.rbxm"
+      }
+    },
     "ReplicatedStorage": {
       "Packages": {
         "$className": "Folder",
@@ -9,6 +14,13 @@
         "roblox-video-codec": {
           "$path": "src"
         }
+      }
+    },
+    "StarterPlayer": {
+      "StarterCharacterScripts": {
+        "$path": "tests/StarterCharacterScripts"
+      },
+      "StarterPlayerScripts": {
       }
     }
   }
