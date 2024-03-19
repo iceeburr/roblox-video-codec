@@ -93,4 +93,4 @@ jobs:
           wally publish
 
       - name: Deploy Release To Roblox
-        run: .rbxcloud.exe experience publish --filename roblox-video-codec.rbxl --place-id ${{vars.PLACE_ID}} --universe-id ${{vars.GAME_ID}} --version-type published --api-key ${{secrets.DEPLOY_API_KEY}}
+        run: rbxcloud.exe experience publish --filename roblox-video-codec.rbxl --place-id ${{vars.PLACE_ID}} --universe-id ${{vars.GAME_ID}} --version-type published --api-key ${{secrets.DEPLOY_API_KEY}}
