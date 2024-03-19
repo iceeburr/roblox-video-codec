@@ -7,6 +7,7 @@
 	Fast JPEG decoder
 	Made by iceeburr with 💖 and 🧊
 	STILL IN DEVELOPMENT, NOT READY FOR USE!
+	finally got github workflows to work :D
 
 ]]
 

@@ -1,0 +1,100 @@
+name: Build & Deploy Release
+
+on:
+  release:
+    types: [published, prerelease]
+
+jobs:
+  Get-Release-Version:
+    runs-on: ubuntu-latest
+    outputs:
+      UPLOAD_URL: ${{ steps.release_info.outputs.upload_url }}
+      TAG_NAME: ${{ steps.release_info.outputs.tag_name }}
+    steps:
+      - name: Get Release Info
+        id: Get-Release-Version
+        run: |
+          echo "::set-output name=TAG_NAME::${{ github.event.release.tag_name }}"
+          echo "::set-output name=UPLOAD_URL::${{ github.event.release.upload_url }}"
+
+  Deploy:
+    needs: Get-Relase-Info
+    runs-on: windows-latest
+    steps:
+      - name: Checkoud Code
+      - uses: actions/checkout@v4
+
+      - name: Install Aftman
+          uses: ok-nick/setup-aftman@v0.4.2
+          with:
+            token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Wally Packages
+        run: wally install
+
+      - name: Generate Sourcemap
+        run: rojo sourcemap test.project.json -o sourcemap.json
+
+      - name: Export Wally Package Types
+        run: |
+          mkdir Packages
+          wally-package-types --sourcemap sourcemap.json Packages
+
+      - name: Curl Luau Types
+        shell: bash
+        run: curl -L "https://raw.githubusercontent.com/JohnnyMorganz/luau-lsp/main/scripts/globalTypes.d.lua" > "globalTypes.d.lua"
+
+      - name: Style Code
+        run: stylua src
+
+      - name: Generate Sourcemap
+        run: rojo sourcemap test.project.json -o sourcemap.json
+
+      - name: Luau LSP Analysis
+        run: luau-lsp analyze --sourcemap sourcemap.json --definitions globalTypes.d.lua src
+
+      - name: Update Version Labels
+        shell: bash
+        run: |
+          goal_version_str="${{needs.Get-Release-Version.outputs.tag_name}}"
+
+          wally_toml_contents=$(<wally.toml)
+
+          goal_version_line="version = \"${goal_version_str}\""
+          target_version_line=$(echo "$wally_toml_contents" | grep -F "version = ")
+          wally_toml_contents="${wally_toml_contents/${target_version_line}/${goal_version_line}}"
+
+          echo "$wally_toml_contents" > "wally.toml"
+
+      - name: Build
+        run: |
+          rojo build test.project.json -o roblox-video-codec.rbxl
+          rojo build default.project.json -o roblox-video-codec.rbxm
+
+      - name: Upload Place Build Artefact
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.Get-Release-Version.outputs.UPLOAD_URL }}
+          asset_path: roblox-video-codec.rbxl
+          asset_name: Place.rbxl
+          asset_content_type: application/octet-stream
+
+      - name: Upload Model Build Artefact
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.Get-Release-Version.outputs.UPLOAD_URL }}
+          asset_path: roblox-video-codec.rbxm
+          asset_name: Model.rbxm
+          asset_content_type: application/octet-stream
+
+      - name: Publish Release To Wally
+        run: |
+          wally login --token "${{secrets.WALLY_TOKEN}}"
+          wally publish
+
+      - name: Deploy Release To Roblox
+        run: .rbxcloud.exe experience publish --filename roblox-video-codec.rbxl --place-id ${{vars.PLACE_ID}} --universe-id ${{vars.GAME_ID}} --version-type published --api-key ${{secrets.DEPLOY_API_KEY}}
