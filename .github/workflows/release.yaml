@@ -72,7 +72,7 @@ jobs:
           rojo build default.project.json -o roblox-video-codec.rbxm
 
       - name: Upload Place Build Artefact
-        uses: svenstaro/upload-release-action@v2.9.0
+        uses: svenstaro/upload-release-actionv2.9.0
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: roblox-video-codec.rbxl
@@ -80,7 +80,7 @@ jobs:
           tag: ${{ needs.Get-Release-Version.outputs.tag_name }}
 
       - name: Upload Model Build Artefact
-        uses: svenstaro/upload-release-action@v2.9.0
+        uses: svenstaro/upload-release-action@2.9.0
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: roblox-video-codec.rbxm
