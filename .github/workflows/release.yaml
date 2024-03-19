@@ -26,8 +26,8 @@ jobs:
 
       - name: Install Aftman
         uses: ok-nick/setup-aftman@v0.4.2
-          with:
-            token: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Wally Packages
         run: wally install
