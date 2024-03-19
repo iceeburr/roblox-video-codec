@@ -3,7 +3,7 @@ name: Code Quality Check
 on: [push]
 
 jobs:
-  Code Quality Check:
+  Code-Quality-Check:
     runs-on: windows-latest
     steps:
       - name: Checkout Code
