@@ -53,5 +53,11 @@ jobs:
           rojo build default.project.json -o roblox-video-codec.rbxm
           rojo build test.project.json -o roblox-video-codec.rbxl
 
-      - name: Deploy
-        run: scripts/deploy.ps1
+      - name: Deploy Game
+        run: rbxcloud experience publish -f roblox-video-codec.rbxl -p ${env:PLACE_ID} -u ${env:GAME_ID} -t published -a 1010 #${env:DEPLOY_API_KEY}
+
+      - name: Login Wally
+        run: wally login --token ${env:WALLY_TOKEN}
+
+      - name: Publish Wally
+        run: wally publish
