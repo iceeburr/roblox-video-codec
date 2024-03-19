@@ -8,8 +8,8 @@ jobs:
   Get-Release-Version:
     runs-on: ubuntu-latest
     outputs:
-      UPLOAD_URL: ${{ steps.release_info.outputs.upload_url }}
-      TAG_NAME: ${{ steps.release_info.outputs.tag_name }}
+      UPLOAD_URL: ${{ steps.release_info.outputs.UPLOAD_URL }}
+      TAG_NAME: ${{ steps.release_info.outputs.TAG_NAME }}
     steps:
       - name: Get Release Version
         id: Get-Release-Version
