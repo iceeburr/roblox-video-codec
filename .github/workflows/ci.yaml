@@ -1,4 +1,4 @@
-name: Code Quality Check
+name: CI
 
 on:
   push:
@@ -11,7 +11,7 @@ on:
       - "**"
 
 jobs:
-  Code-Quality-Check:
+  CI:
     runs-on: windows-latest
     steps:
       - name: Checkout Code

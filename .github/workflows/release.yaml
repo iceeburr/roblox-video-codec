@@ -1,4 +1,4 @@
-name: Build & Deploy Release
+name: Build & Deploy
 
 on:
   release:
