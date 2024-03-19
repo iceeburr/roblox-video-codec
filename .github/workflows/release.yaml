@@ -18,7 +18,7 @@ jobs:
           echo "::set-output name=UPLOAD_URL::${{ github.event.release.upload_url }}"
 
   Deploy:
-    needs: Get-Relase-Info
+    needs: Get-Relase-Version
     runs-on: windows-latest
     steps:
       - name: Checkout Code
