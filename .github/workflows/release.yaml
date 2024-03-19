@@ -11,14 +11,14 @@ jobs:
       UPLOAD_URL: ${{ steps.release_info.outputs.upload_url }}
       TAG_NAME: ${{ steps.release_info.outputs.tag_name }}
     steps:
-      - name: Get Release Info
+      - name: Get Release Version
         id: Get-Release-Version
         run: |
           echo "::set-output name=TAG_NAME::${{ github.event.release.tag_name }}"
           echo "::set-output name=UPLOAD_URL::${{ github.event.release.upload_url }}"
 
   Deploy:
-    needs: Get-Relase-Version
+    needs: Get-Release-Version
     runs-on: windows-latest
     steps:
       - name: Checkout Code
@@ -56,7 +56,7 @@ jobs:
       - name: Update Version Labels
         shell: bash
         run: |
-          goal_version_str="${{needs.Get-Release-Version.outputs.tag_name}}"
+          goal_version_str="${{needs.Get-Release-Version.outputs.TAG_NAME}}"
 
           wally_toml_contents=$(<wally.toml)
 
