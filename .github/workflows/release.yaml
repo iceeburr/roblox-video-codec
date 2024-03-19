@@ -21,8 +21,8 @@ jobs:
     needs: Get-Relase-Info
     runs-on: windows-latest
     steps:
-      - name: Checkoud Code
-      - uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
       - name: Install Aftman
         uses: ok-nick/setup-aftman@v0.4.2
