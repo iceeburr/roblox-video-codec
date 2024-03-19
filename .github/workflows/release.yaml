@@ -8,14 +8,14 @@ jobs:
   Get-Release-Version:
     runs-on: ubuntu-latest
     outputs:
-      UPLOAD_URL: ${{ steps.release_info.outputs.UPLOAD_URL }}
-      TAG_NAME: ${{ steps.release_info.outputs.TAG_NAME }}
+      upload_url: ${{ steps.Get-Release-Version.outputs.upload_url }}
+      tag_name: ${{ steps.Get-Release-Version.outputs.tag_name }}
     steps:
       - name: Get Release Version
         id: Get-Release-Version
         run: |
-          echo "::set-output name=TAG_NAME::${{ github.event.release.tag_name }}"
-          echo "::set-output name=UPLOAD_URL::${{ github.event.release.upload_url }}"
+          echo "upload_url=${{ github.event.release.upload_url }}" >> $GITHUB_OUTPUT
+          echo "tag_name=${{ github.event.release.tag_name }}" >> $GITHUB_OUTPUT
 
   Deploy:
     needs: Get-Release-Version
@@ -56,7 +56,7 @@ jobs:
       - name: Update Version Labels
         shell: bash
         run: |
-          goal_version_str="${{needs.Get-Release-Version.outputs.TAG_NAME}}"
+          goal_version_str="${{needs.Get-Release-Version.outputs.tag_name}}"
 
           wally_toml_contents=$(<wally.toml)
 
@@ -72,24 +72,20 @@ jobs:
           rojo build default.project.json -o roblox-video-codec.rbxm
 
       - name: Upload Place Build Artefact
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: svenstaro/upload-release-action@v1
         with:
-          upload_url: ${{ needs.Get-Release-Version.outputs.UPLOAD_URL }}
-          asset_path: roblox-video-codec.rbxl
-          asset_name: Place.rbxl
-          asset_content_type: application/octet-stream
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: roblox-video-codec.rbxl
+          asset_name: Place.rbxm
+          tag: ${{ needs.Get-Release-Version.outputs.tag_name }}
 
       - name: Upload Model Build Artefact
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: svenstaro/upload-release-action@v1
         with:
-          upload_url: ${{ needs.Get-Release-Version.outputs.UPLOAD_URL }}
-          asset_path: roblox-video-codec.rbxm
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: roblox-video-codec.rbxm
           asset_name: Model.rbxm
-          asset_content_type: application/octet-stream
+          tag: ${{ needs.Get-Release-Version.outputs.tag_name }}
 
       - name: Publish Release To Wally
         run: |

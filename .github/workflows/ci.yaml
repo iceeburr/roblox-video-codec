@@ -1,6 +1,14 @@
 name: Code Quality Check
 
-on: [push]
+on:
+  push:
+    branches:
+      - "**"
+    tags-ignore:
+      - "v*"
+  pull_request:
+    branches:
+      - "**"
 
 jobs:
   Code-Quality-Check:
