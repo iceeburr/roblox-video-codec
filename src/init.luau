@@ -1,13 +1,11 @@
 --!native
 --!optimize 2
---!strict
 
 --[[
 
 	Fast JPEG decoder
 	Made by iceeburr with 💖 and 🧊
 	STILL IN DEVELOPMENT, NOT READY FOR USE!
-	finally got github workflows to work :D
 
 ]]
 
@@ -15,7 +13,11 @@ local jpeg = {}
 
 --// Base Functions & Constants \\--
 
-local _markerTypes = {
+local function COM()
+	return 1
+end
+
+local markerTypes = {
 	--// Frame Types & Extra (SOFn) \\--
 	[0xC0] = "unsupported", -- SOF0 Baseline DCT
 	[0xC1] = "unsupported", -- SOF1 Extended Sequential DCT
@@ -54,7 +56,7 @@ local _markerTypes = {
 	[0xDD] = "unsupported", -- DRI (Define Restart Interval)
 	[0xDE] = "unsupported", -- DHP (Define Hierarchical Progression)
 	[0xDF] = "unsupported", -- EXP (Expand Reference Components)
-	[0xFE] = "unsupported", -- COM (Comment)
+	[0xFE] = COM, -- COM (Comment)
 
 	--// Application Segments (APPn) \\--
 	[0xE0] = "unsupported", -- APP0 JFIF (len >=14) / JFXX (len >= 6) / AVI MJPEG
@@ -102,6 +104,29 @@ function jpeg.decode(databuffer: buffer): ()
 	then
 		error("File is not a JPEG")
 	end
+
+	-- Process markers
+	local position = 4 -- Skip the JPEG signature
+
+	while position < buffer.len(databuffer) do
+		local marker = buffer.readu8(databuffer, position)
+		local markerLength = buffer.readu16(databuffer, position + 2)
+
+		if markerTypes[marker] then
+			if markerTypes[marker] == "unsupported" then
+				position = position + markerLength - 2
+				continue
+			end
+			local markerFunction = markerTypes[marker]
+			local markerEnd = position + markerLength - 2
+
+			local length = markerFunction(databuffer, position + 2, markerEnd)
+			position = position + length
+		else
+			error("Invalid marker: " .. marker)
+		end
+	end
 end
 
+local unused = 1
 return jpeg
