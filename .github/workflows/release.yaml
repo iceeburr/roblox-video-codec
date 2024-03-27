@@ -36,9 +36,7 @@ jobs:
         run: rojo sourcemap test.project.json -o sourcemap.json
 
       - name: Export Wally Package Types
-        run: |
-          mkdir Packages
-          wally-package-types --sourcemap sourcemap.json Packages
+        run: wally-package-types --sourcemap sourcemap.json Packages
 
       - name: Curl Luau Types
         shell: bash
