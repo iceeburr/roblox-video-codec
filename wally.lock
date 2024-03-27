@@ -5,4 +5,9 @@ registry = "test"
 [[package]]
 name = "iceeburr/roblox-video-codec"
 version = "0.0.0"
+dependencies = [["base64", "reselim/base64@3.0.0"]]
+
+[[package]]
+name = "reselim/base64"
+version = "3.0.0"
 dependencies = []
