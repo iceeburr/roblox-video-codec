@@ -1,5 +1,6 @@
 --!native
 --!optimize 2
+--!nocheck
 
 --// Base Functions & Constants \\--
 
@@ -17,12 +18,12 @@ end
 --// Decoding Procedures \\--
 
 local function DQT(databuffer: buffer)
-	local timenow = os.clock()
-	local quant: {} = table.create(65)
-	local precision = rshift(readu8(databuffer, 0), 4)
-	quant["i"] = band(readu8(databuffer, 0), 0x0F)
-	if precision == 1 then
-		for j = 1, 32 do
+	local quant: {} = table.create(66)
+	local header = readu8(databuffer, 0)
+	quant["p"] = rshift(header, 4)
+	quant["i"] = band(header, 0x0F)
+	if quant["p"] == 1 then
+		for j = 1, 64 do
 			quant[j] = combineBytes(readu8(databuffer, j), readu8(databuffer, j + 1))
 		end
 	else
@@ -30,12 +31,14 @@ local function DQT(databuffer: buffer)
 			quant[j] = readu8(databuffer, j)
 		end
 	end
-	print("parallel time:", os.clock() - timenow)
 	return quant
 end
 
+local function SOF0(databuffer: buffer) end
+
 local procedures = {
 	[0xDB] = DQT,
+	[0xC0] = SOF0,
 }
 
 return function(markerType: number, datastring: string)
