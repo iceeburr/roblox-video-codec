@@ -58,20 +58,25 @@ function rbxvideo.new(videodata: buffer): videostream
 		return bor(low, lshift(high, 8))
 	end
 
-	local function DQT(index: number): ()
-		local quant: {} = table.create(64)
-		local header = readu8(videodata, index)
-		if rshift(header, 4) == 0 then
-			for j = 1, 64 do
-				quant[j] = readu8(videodata, index + j)
+	local function DQT(index: number, length: number): ()
+		local b = 0
+		local quant: any = table.create(64)
+		while b < length do
+			local header = readu8(videodata, index + b)
+			if rshift(header, 4) == 0 then
+				for j = 1, 64 do
+					quant[j] = readu8(videodata, index + b + j)
+				end
+			else
+				local offset
+				for j = 0, 63 do
+					offset = index + b + (j * 2)
+					quant[j + 1] = combineBytes(readu8(videodata, offset + 1), readu8(videodata, offset + 2))
+				end
 			end
-		else
-			warn("Warning - DQT has precision 1 (not tested)")
-			for j = 1, 128 do
-				quant[j] = combineBytes(readu8(videodata, index + j), readu8(videodata, index + j + 1))
-			end
+			b += 65
+			table.insert(jpegData[1], { band(header, 0x0F), quant })
 		end
-		jpegData[1][band(header, 0x0F) + 1] = quant
 	end
 
 	local function SOF0(index: number): ()
@@ -85,34 +90,37 @@ function rbxvideo.new(videodata: buffer): videostream
 			local offset = index + (i * 3)
 			local sampleFactor = readu8(videodata, offset + 7)
 			frameData[4][i + 1] = {
-				bit32.band(bit32.rshift(sampleFactor, 4), 0x0F),
-				bit32.band(bit32.rshift(sampleFactor, 4), 0x0F),
+				band(rshift(sampleFactor, 4), 0x0F),
+				band(rshift(sampleFactor, 4), 0x0F),
 				readu8(videodata, offset + 8),
 			}
 		end
 		jpegData[2] = frameData
 	end
 
-	local function DHT(index: number) end
-
-	local function DRI(index: number): ()
-		jpegData[5] = combineBytes(readu8(videodata, index - 2), readu8(videodata, index - 1))
+	local function DHT(index: number, length: number): ()
+		local tableType = readu8(videodata, index)
+		table.insert(jpegData[3], { band(rshift(tableType, 4), 0x0F), band(tableType, 0x0F) })
 	end
 
-	local function SOS(index: number)
+	local function SOS(index: number): ()
 		for i = 0, readu8(videodata, index) - 1 do
 			local offset = index + (i * 2)
 			local huffmanID = readu8(videodata, offset + 2)
-			jpegData[4][i + 1] = { bit32.band(bit32.rshift(huffmanID, 4), 0x0F), bit32.band(huffmanID, 0x0F) }
+			jpegData[4][i + 1] = { band(rshift(huffmanID, 4), 0x0F), band(huffmanID, 0x0F) }
 		end
+	end
+
+	local function DRI(index: number): ()
+		jpegData[5] = combineBytes(readu8(videodata, index - 2), readu8(videodata, index - 1))
 	end
 
 	local procedures = {
 		[0xDB] = DQT,
 		[0xC0] = SOF0,
 		[0xC4] = DHT,
-		[0xDD] = DRI,
 		[0xDA] = SOS,
+		[0xDD] = DRI,
 	}
 
 	--// Module API \\--
@@ -125,14 +133,15 @@ function rbxvideo.new(videodata: buffer): videostream
 					local markerType = readu8(videodata, index + 1)
 					local procedure = procedures[markerType]
 					if procedure then
-						procedure(index + 4)
+						local length = combineBytes(readu8(videodata, index + 2), readu8(videodata, index + 3))
+						procedure(index + 4, length - 2)
 						if markerType == 0xDA then
 							break
 						elseif markerType == 0xDD then
 							index += 4
 							continue
 						end
-						index += 2 + combineBytes(readu8(videodata, index + 2), readu8(videodata, index + 3))
+						index += 2 + length
 					else
 						index += 2 + combineBytes(readu8(videodata, index + 2), readu8(videodata, index + 3))
 					end
