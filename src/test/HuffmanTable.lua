@@ -1,4 +1,3 @@
---!nocheck
 local module = {}
 
 local function BitsFromLength(root, element, pos)

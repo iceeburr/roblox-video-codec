@@ -52,13 +52,13 @@ function rbxvideo.new(videodata: buffer): videostream
 	local band = bit32.band
 	local bor = bit32.bor
 
-	local jpegData: { any } = { {}, {}, {}, {} }
+	local jpegData: { any } = { {}, {}, {}, {}, 0, {} }
 
 	local function combineBytes(high: number, low: number): number
 		return bor(low, lshift(high, 8))
 	end
 
-	local function DQT(index: number, length: number): ()
+	local function DQT(index: number): ()
 		local quant: {} = table.create(64)
 		local header = readu8(videodata, index)
 		if rshift(header, 4) == 0 then
@@ -74,7 +74,7 @@ function rbxvideo.new(videodata: buffer): videostream
 		jpegData[1][band(header, 0x0F) + 1] = quant
 	end
 
-	local function SOF0(index: number, length: number): ()
+	local function SOF0(index: number): ()
 		local frameData: { any } = {
 			readu8(videodata, index),
 			combineBytes(readu8(videodata, index + 3), readu8(videodata, index + 4)), -- Width (xResolution)
@@ -93,13 +93,19 @@ function rbxvideo.new(videodata: buffer): videostream
 		jpegData[2] = frameData
 	end
 
-	local function DHT(index: number, length: number) end
+	local function DHT(index: number) end
 
-	local function DRI(index: number, length: number): ()
+	local function DRI(index: number): ()
 		jpegData[5] = combineBytes(readu8(videodata, index - 2), readu8(videodata, index - 1))
 	end
 
-	local function SOS(index: number, length: number) end
+	local function SOS(index: number)
+		for i = 0, readu8(videodata, index) - 1 do
+			local offset = index + (i * 2)
+			local huffmanID = readu8(videodata, offset + 2)
+			jpegData[4][i + 1] = { bit32.band(bit32.rshift(huffmanID, 4), 0x0F), bit32.band(huffmanID, 0x0F) }
+		end
+	end
 
 	local procedures = {
 		[0xDB] = DQT,
@@ -119,15 +125,14 @@ function rbxvideo.new(videodata: buffer): videostream
 					local markerType = readu8(videodata, index + 1)
 					local procedure = procedures[markerType]
 					if procedure then
-						local length = combineBytes(readu8(videodata, index + 2), readu8(videodata, index + 3))
-						procedure(index + 4, length - 2)
+						procedure(index + 4)
 						if markerType == 0xDA then
 							break
 						elseif markerType == 0xDD then
 							index += 4
 							continue
 						end
-						index += 2 + length
+						index += 2 + combineBytes(readu8(videodata, index + 2), readu8(videodata, index + 3))
 					else
 						index += 2 + combineBytes(readu8(videodata, index + 2), readu8(videodata, index + 3))
 					end
