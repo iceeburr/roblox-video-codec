@@ -1,7 +1,7 @@
 --!nocheck
 local module = {}
 
-local function BitsFromLength(root, element, pos)
+local function BitsFromLength(root, element, pos: number): boolean
 	if type(root) == "table" then
 		if pos == 0 then
 			if #root < 2 then

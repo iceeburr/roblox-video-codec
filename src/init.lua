@@ -43,24 +43,70 @@ function rbxvideo.new(videodata: buffer): videostream
 
 	--// Base Functions & Constants \\--
 
-	local _parallelScheduler: any = require(script.parallelScheduler):LoadModule(script.worker)
-
+	-- Local is faster than global
 	local readu8 = buffer.readu8
 	local buflen = buffer.len
 	local rshift = bit32.rshift
 	local lshift = bit32.lshift
 	local band = bit32.band
 	local bor = bit32.bor
+	local tableinsert = table.insert
+	local tablecreate = table.create
 
-	local jpegData: { any } = { {}, {}, {}, {}, 0, {} }
+	--[[
+		Initialize the data structure
+		 1 - DQT  | First for Luminance, second for Chrominance
+		 2 - SOFn | Precision, Width, Height, Components 
+		 3 - DHT  | First for DC, second for AC | First for Luminance, second for Chrominance
+		 4 - SOS  | Components
+		 5 - DRI
+		 6 - Pixel Data
+	]]
+	local jpegData: { any } = { { {}, {} }, {}, { { {}, {} }, { {}, {} } }, {}, 0, {} }
 
+	-- Don't get mixed up with readu16, they are completely different.
 	local function combineBytes(high: number, low: number): number
 		return bor(low, lshift(high, 8))
 	end
 
+	-- Huffman
+	local function BitsFromLength(root: {}, element: number, pos: number): boolean
+		if type(root) == "table" then
+			if pos == 0 then
+				if #root < 2 then
+					tableinsert(root, element)
+					return true
+				end
+				return false
+			end
+			for i = 0, 1 do
+				if #root == i then
+					tableinsert(root, {})
+				end
+				if BitsFromLength(root[i + 1], element, pos - 1) == true then
+					return true
+				end
+			end
+		end
+		return false
+	end
+
+	local function ConstructTree(lengths: {}, elements: {}): ()
+		local huffmanTable = {}
+		local k = 1
+		for i = 1, #lengths do
+			for _ = 1, lengths[i] do
+				BitsFromLength(huffmanTable, elements[k], i - 1)
+				k += 1
+			end
+		end
+		return huffmanTable
+	end
+
+	-- Quantization table(s)
 	local function DQT(index: number, length: number): ()
 		local b = 0
-		local quant: any = table.create(64)
+		local quant: any = tablecreate(64)
 		while b < length do
 			local header = readu8(videodata, index + b)
 			if rshift(header, 4) == 0 then
@@ -75,10 +121,11 @@ function rbxvideo.new(videodata: buffer): videostream
 				end
 			end
 			b += 65
-			table.insert(jpegData[1], { band(header, 0x0F), quant })
+			tableinsert(jpegData[1][band(header, 0x0F) + 1], quant)
 		end
 	end
 
+	-- Start of frame data
 	local function SOF0(index: number): ()
 		local frameData: { any } = {
 			readu8(videodata, index),
@@ -98,11 +145,31 @@ function rbxvideo.new(videodata: buffer): videostream
 		jpegData[2] = frameData
 	end
 
+	-- Huffman table(s)
 	local function DHT(index: number, length: number): ()
-		local tableType = readu8(videodata, index)
-		table.insert(jpegData[3], { band(rshift(tableType, 4), 0x0F), band(tableType, 0x0F) })
+		local b = 0
+		while b < length do
+			local header = readu8(videodata, index + b)
+			local lengths = table.create(16)
+			local symbols = {}
+			for j = 1, 16 do
+				lengths[j] = readu8(videodata, index + j + b)
+			end
+			b += 17
+			for _, length in pairs(lengths) do
+				for _ = 1, length do
+					tableinsert(symbols, readu8(videodata, index + b))
+					b += 1
+				end
+			end
+			tableinsert(
+				jpegData[3][band(rshift(header, 4), 0x0F) + 1][band(header, 0x0F) + 1],
+				ConstructTree(lengths, symbols)
+			)
+		end
 	end
 
+	-- Start of scan
 	local function SOS(index: number): ()
 		for i = 0, readu8(videodata, index) - 1 do
 			local offset = index + (i * 2)
@@ -111,10 +178,12 @@ function rbxvideo.new(videodata: buffer): videostream
 		end
 	end
 
+	-- Define restart interval (might be removed)
 	local function DRI(index: number): ()
 		jpegData[5] = combineBytes(readu8(videodata, index - 2), readu8(videodata, index - 1))
 	end
 
+	-- To avoid many nested if statements a simple table is used. The private functions shouldn't return anything anyways.
 	local procedures = {
 		[0xDB] = DQT,
 		[0xC0] = SOF0,
@@ -132,24 +201,26 @@ function rbxvideo.new(videodata: buffer): videostream
 				if readu8(videodata, index) == 0xFF then
 					local markerType = readu8(videodata, index + 1)
 					local procedure = procedures[markerType]
-					if procedure then
+					if procedure then -- Required procedures
 						local length = combineBytes(readu8(videodata, index + 2), readu8(videodata, index + 3))
 						procedure(index + 4, length - 2)
-						if markerType == 0xDA then
+						if markerType == 0xDA then -- Break if start of scan
 							break
-						elseif markerType == 0xDD then
+						elseif markerType == 0xDD then -- Edge case for DRI
 							index += 4
 							continue
 						end
 						index += 2 + length
-					else
+					else -- Useless markers
 						index += 2 + combineBytes(readu8(videodata, index + 2), readu8(videodata, index + 3))
 					end
 				else
+					-- Currently it might glitch out for parameterless markers like SOI and EOI
 					error("Internal error: lost buffer offset.")
 				end
 			end
 			return jpegData
+			-- return jpegData[6]
 		end,
 	}
 end
