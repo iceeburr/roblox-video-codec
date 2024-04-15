@@ -32,15 +32,6 @@ export type pixelData = { r: number, g: number, b: number, a: number }
 export type videostream = { Decode: () -> pixelData }
 
 function rbxvideo.new(videodata: buffer): videostream
-	-- Check for the JPEG signature
-	if
-		buffer.readu8(videodata, 0) ~= 0xFF
-		or buffer.readu8(videodata, 1) ~= 0xD8
-		or buffer.readu8(videodata, 2) ~= 0xFF
-	then
-		error("File is not a JPEG")
-	end
-
 	--// Base Functions & Constants \\--
 
 	-- Local is faster than global
@@ -52,6 +43,11 @@ function rbxvideo.new(videodata: buffer): videostream
 	local bor = bit32.bor
 	local tableinsert = table.insert
 	local tablecreate = table.create
+
+	-- Check for the JPEG signature
+	if readu8(videodata, 0) ~= 0xFF or readu8(videodata, 1) ~= 0xD8 or readu8(videodata, 2) ~= 0xFF then
+		error("File is not a JPEG")
+	end
 
 	--[[
 		Initialize the data structure
@@ -128,10 +124,10 @@ function rbxvideo.new(videodata: buffer): videostream
 	-- Start of frame data
 	local function SOF0(index: number): ()
 		local frameData: { any } = {
-			readu8(videodata, index),
+			readu8(videodata, index), -- Precision
 			combineBytes(readu8(videodata, index + 3), readu8(videodata, index + 4)), -- Width (xResolution)
 			combineBytes(readu8(videodata, index + 1), readu8(videodata, index + 2)), -- Heigth (yResolution)
-			{},
+			{}, -- Components
 		}
 		for i = 0, readu8(videodata, index + 5) - 1 do
 			local offset = index + (i * 3)
@@ -176,6 +172,8 @@ function rbxvideo.new(videodata: buffer): videostream
 			local huffmanID = readu8(videodata, offset + 2)
 			jpegData[4][i + 1] = { band(rshift(huffmanID, 4), 0x0F), band(huffmanID, 0x0F) }
 		end
+
+		-- Compressed Image Data
 	end
 
 	-- Define restart interval (might be removed)
@@ -194,7 +192,7 @@ function rbxvideo.new(videodata: buffer): videostream
 
 	--// Module API \\--
 	return {
-		Decode = function(): any
+		Decode = function(): any -- pixelData
 			local index = 2
 			-- Decode Required Data (everything before the entropy-coded image data)
 			while index < buflen(videodata) - 2 do
