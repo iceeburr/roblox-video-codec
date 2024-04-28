@@ -1,7 +1,8 @@
 {
   "languageMode": "strict",
   "lint": {
-    "*": true
+    "*": true,
+    "LocalUnused": false
   },
   "lintErrors": true,
   "typeErrors": true,

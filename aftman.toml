@@ -1,6 +1,5 @@
 [tools]
 rojo = "rojo-rbx/rojo@7.4.1"
-StyLua = "JohnnyMorganz/StyLua@0.20.0"
 luau-lsp = "JohnnyMorganz/luau-lsp@1.28.1"
 rbxcloud = "Sleitnick/rbxcloud@0.6.1"
 Wally = "UpliftGames/Wally@0.3.2"

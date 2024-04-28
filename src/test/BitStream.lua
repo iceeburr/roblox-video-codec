@@ -14,8 +14,6 @@ function module.CreateBitStream(data)
 			return -1
 		end
 
-		local _index = bit32.rshift(stream.pos, 3) + 1
-
 		local bit = bit32.band(bit32.rshift(stream.data[nextByte + 1], (7 - nextBit)), 1)
 		nextBit = nextBit + 1
 
@@ -37,7 +35,6 @@ function module.CreateBitStream(data)
 				bits = -1
 				break
 			end
-
 			bits = bit32.bor(bit32.lshift(bits, 1), bit)
 		end
 

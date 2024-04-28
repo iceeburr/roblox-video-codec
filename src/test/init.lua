@@ -9,22 +9,21 @@ local RUN_SERVICE = game:GetService("RunService")
 local PREVENT_TIMEOUT_INTERVAL = 50
 
 -- Supported modes
-local supportedModes =
-	{ -- If a mode is not supported (set to false) then the module will simply return and say that the mode isn't supported, in short, it won't bother decoding it.
-		[0xC0] = true, -- "Start Of Frame 0"
-		[0xC1] = true, -- "Start Of Frame 1"
-		[0xC2] = true, -- "Start Of Frame 2"
-		[0xC3] = false, -- "Start Of Frame 3"
-		[0xC5] = false, -- "Start Of Frame 5"
-		[0xC6] = false, -- "Start Of Frame 6"
-		[0xC7] = false, -- "Start Of Frame 7"
-		[0xC9] = false, -- "Start Of Frame 9"
-		[0xCA] = false, -- "Start Of Frame 10"
-		[0xCB] = false, -- "Start Of Frame 11"
-		[0xCD] = false, -- "Start Of Frame 13"
-		[0xCE] = false, -- "Start Of Frame 14"
-		[0xCF] = false, -- "Start Of Frame 15"
-	}
+local supportedModes = { -- If a mode is not supported (set to false) then the module will simply return and say that the mode isn't supported, in short, it won't bother decoding it.
+	[0xC0] = true, -- "Start Of Frame 0"
+	[0xC1] = true, -- "Start Of Frame 1"
+	[0xC2] = true, -- "Start Of Frame 2"
+	[0xC3] = false, -- "Start Of Frame 3"
+	[0xC5] = false, -- "Start Of Frame 5"
+	[0xC6] = false, -- "Start Of Frame 6"
+	[0xC7] = false, -- "Start Of Frame 7"
+	[0xC9] = false, -- "Start Of Frame 9"
+	[0xCA] = false, -- "Start Of Frame 10"
+	[0xCB] = false, -- "Start Of Frame 11"
+	[0xCD] = false, -- "Start Of Frame 13"
+	[0xCE] = false, -- "Start Of Frame 14"
+	[0xCF] = false, -- "Start Of Frame 15"
+}
 
 -- Create idct LUT
 local idctTable = {}
@@ -213,13 +212,7 @@ function module.CreateJPEGfromBytes(rawInputBytes, printDebugInformation, printP
 			local i = pos
 			local _lastByte = 0
 
-			if
-				bytes[i] == 65
-				and bytes[i + 1] == 100
-				and bytes[i + 2] == 111
-				and bytes[i + 3] == 98
-				and bytes[i + 4] == 101
-			then
+			if bytes[i] == 65 and bytes[i + 1] == 100 and bytes[i + 2] == 111 and bytes[i + 3] == 98 and bytes[i + 4] == 101 then
 				colorTransform = bytes[i + 11]
 
 				if printDebugInformation then
@@ -556,15 +549,7 @@ function module.CreateJPEGfromBytes(rawInputBytes, printDebugInformation, printP
 			jpeg.ColorComponents[componentId].QuantSelection = quantTableId
 
 			if printDebugInformation then
-				print(
-					string.format(
-						"  Component %i: [Selection: %i] [Sample Factor: %i] [Quant ID: %i]",
-						id + 1,
-						componentId,
-						sampleFactor,
-						quantTableId
-					)
-				)
+				print(string.format("  Component %i: [Selection: %i] [Sample Factor: %i] [Quant ID: %i]", id + 1, componentId, sampleFactor, quantTableId))
 				print("   - X Sampling Factor: " .. horizontalSample)
 				print("   - Y Sampling Factor: " .. verticalSample)
 			end
@@ -614,27 +599,17 @@ function module.CreateJPEGfromBytes(rawInputBytes, printDebugInformation, printP
 			table.insert(loopComponents, component)
 
 			if printDebugInformation then
-				print(
-					" Component["
-						.. i + 1
-						.. "]: selector="
-						.. selector
-						.. ", table="
-						.. DCTableID
-						.. "(DC),"
-						.. ACTableID
-						.. "(AC)"
-				)
+				print(" Component[" .. i + 1 .. "]: selector=" .. selector .. ", table=" .. DCTableID .. "(DC)," .. ACTableID .. "(AC)")
 			end
 
 			offset = offset + 2
 		end
 
-		local successiveApproximation = bytes[pos + offset + 2]
-		local ss = bytes[pos + offset] -- Spectral start
-		local se = bytes[pos + offset + 1] -- Spectral end
-		local ah = bit32.band(bit32.rshift(successiveApproximation, 4), 0x0F) -- Successive Approximation low part of byte
-		local al = bit32.band(successiveApproximation, 0x0F) -- Successive Approximation low part of byte
+		local successiveApproximation = bytes[pos + offset + 2] -- NOT NEEDED
+		local ss = bytes[pos + offset] -- Spectral start NOT NEEDED
+		local se = bytes[pos + offset + 1] -- Spectral end NOT NEEDED
+		local ah = bit32.band(bit32.rshift(successiveApproximation, 4), 0x0F) -- Successive Approximation low part of byte NOT NEEDED
+		local al = bit32.band(successiveApproximation, 0x0F) -- Successive Approximation low part of byte NOT NEEDED
 
 		if printDebugInformation then
 			print("Spectral Selection: " .. ss .. " .. " .. se)
@@ -863,8 +838,7 @@ function module.CreateJPEGfromBytes(rawInputBytes, printDebugInformation, printP
 					mcu[i] = value
 				elseif size == 0 then
 					if runLength < 15 then
-						local newEOBrun = bitStream.ReadBits(runLength)
-							+ BitwiseHandleOverflow(bit32.lshift(1, runLength))
+						local newEOBrun = bitStream.ReadBits(runLength) + BitwiseHandleOverflow(bit32.lshift(1, runLength))
 
 						while i <= se and i < se do
 							i = i + 1
